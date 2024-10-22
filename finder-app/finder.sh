@@ -1,8 +1,11 @@
 #!/bin/bash
-umask 077
+
 # Check if the correct number of arguments is provided
 if [ $# -ne 2 ]; then
-  echo "Error: Usage: Two arguments required: <directory> <search string>"
+  
+  echo -e "This script takes two(2) arguments:"
+  echo -e "1) Directory on the file system"
+  echo -e "2) Stiring to be searched through the file system"
   exit 1
 fi
 
