@@ -110,6 +110,34 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 */
 
     va_end(args);
+    //Fork a new process
+    pid_t pid = fork();
+    if(pid == -1){
+	return false;
+    }else if(pid == 0){
+	//Processing for the child process
+	//Redirect the output to the output file
+	int fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	//Checking if file open failed
+	if(fd == -1){
+            exit(EXIT_FAILURE);
+	}
+	if(dup2(fd, STDOUT_FILENO) == -1){
+	    close(fd);
+	    exit(EXIT_FAILURE);
+	}
+	close(fd);
 
-    return true;
+	//execv() command
+	execv(command[0],command);
+	//Exit if execv() fails
+	exit(EXIT_FAILURE);
+    }else{
+	int pStatus;
+	if(waitpid(pid, &pStatus,0) == -1){
+	    //pid failed
+            return false;
+	}
+	return WIFEXITED(pStatus) && WEXITSTATUS(pStatus) == 0;
+    }
 }
