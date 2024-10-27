@@ -1,4 +1,5 @@
 #include "systemcalls.h"
+#include <stdlib.h>   //Adding this header for calling system()
 
 /**
  * @param cmd the command to execute with system()
@@ -10,14 +11,12 @@
 bool do_system(const char *cmd)
 {
 
-/*
- * TODO  add your code here
- *  Call the system() function with the command set in the cmd
+/*  Call the system() function with the command set in the cmd
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+    int returnCode = system(cmd);  //Calling the system() with cmd as input argument
+    return (returnCode == 0);	    // Returns exit status 0 if system executed succiessfully
 }
 
 /**
@@ -61,7 +60,24 @@ bool do_exec(int count, ...)
 
     va_end(args);
 
-    return true;
+    //Fork a new process
+    pid_t pid = fork();
+    if(pid == -1){
+	return false;
+    }else if(pid == 0){
+	//Child process using execv()
+	execv(command[0],command);
+	//Exit if execv() fails
+	exit(EXIT_FAILURE);
+    }else{
+	//Parent process
+	int statusProcess;
+	if(waitpid(pid, &statusProcess,0) == -1){
+	    //Resturning false on pid fail
+            return false;
+	}
+	return WIFEXITED(statusProcess) && WEXITSTATUS(statusProcess) == 0;
+    }
 }
 
 /**
