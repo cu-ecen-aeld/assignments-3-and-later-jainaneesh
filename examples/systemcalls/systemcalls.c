@@ -120,7 +120,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     }else if(pid == 0){
 	//Processing for the child process
 	//Redirect the output to the output file
-	int fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	int fd = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	//Checking if file open failed
 	if(fd == -1){
             exit(EXIT_FAILURE);
