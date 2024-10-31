@@ -35,6 +35,21 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
     git checkout ${KERNEL_VERSION}
 
     # TODO: Add your kernel build steps here
+    # Deep cleaning
+    echo -e "Build step 1. Deep cleaning with mrproper"
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} mrproper
+    # Doing a default config using defconfig
+    echo -e "Build step 2. Configuring for defconfig"
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} defconfig
+    # Building our vmlinux target
+    echo -e "Build step 3. Building the vmlinux targer"
+    make -j4 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} all
+    # Building modules
+    echo -e "Build step 4. Building modules"
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} modules
+    # Building the device tree
+    echo -e "Build step 5. Building the device tree"
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} dtbs
 fi
 
 echo "Adding the Image in outdir"
