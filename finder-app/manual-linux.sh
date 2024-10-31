@@ -76,11 +76,27 @@ git clone git://busybox.net/busybox.git
     cd busybox
     git checkout ${BUSYBOX_VERSION}
     # TODO:  Configure busybox
+    # Debug message
+    # Cleaning any residuals
+    echo -e "Cleaning up busybox"
+    make distclean
+    # Make with default config
+    echo -e "Adding default config to busybox"
+    make defconfig
 else
     cd busybox
 fi
 
 # TODO: Make and install busybox
+# Debug message
+# Cross compiling busybox
+echo -e "Cross compiling Busybox"
+make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
+# Make and install busybox
+echo -e "Make and install busybox"
+make CONFIG_PREFIX=${OUTDIR}/rootfs ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} install
+
+
 
 echo "Library dependencies"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
