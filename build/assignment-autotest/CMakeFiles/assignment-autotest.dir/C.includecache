@@ -80,20 +80,6 @@ examples/autotest-validate/autotest-validate.h
 
 /home/linux-o-phile/assignment-2-jainaneesh/assignment-autotest/test/unity_runner.c
 
-/home/linux-o-phile/assignment-2-jainaneesh/examples/systemcalls/systemcalls.c
-systemcalls.h
-/home/linux-o-phile/assignment-2-jainaneesh/examples/systemcalls/systemcalls.h
-stdlib.h
--
-unistd.h
--
-stdbool.h
--
-wait.h
--
-fcntl.h
--
-
 /home/linux-o-phile/assignment-2-jainaneesh/examples/systemcalls/systemcalls.h
 stdio.h
 -
