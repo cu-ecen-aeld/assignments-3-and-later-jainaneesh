@@ -15,11 +15,10 @@ void* threadfunc(void* thread_param)
     // hint: use a cast like the one below to obtain thread arguments from your parameter
     //struct thread_data* thread_func_args = (struct thread_data *) thread_param;
     //return thread_param;
-    void* threadfunc(void* thread_param) {
     // Cast the parameter to thread_data structure
     struct thread_data* thread_func_args = (struct thread_data*)thread_param;
 
-    // Wait before obtaining the mutex
+    // Hold on for x us before obtaining the mutex
     usleep(thread_func_args->wait_to_obtain_ms * 1000); // Convert ms to us
     if (pthread_mutex_lock(thread_func_args->mutex) != 0) {
         ERROR_LOG("Failed to obtain mutex");
@@ -27,7 +26,7 @@ void* threadfunc(void* thread_param)
         return NULL;
     }
 
-    // Wait before releasing the mutex
+    // Wait before releasing the held mutex
     usleep(thread_func_args->wait_to_release_ms * 1000); // Convert ms to us
 
     // Release the mutex
@@ -37,9 +36,8 @@ void* threadfunc(void* thread_param)
         return NULL;
     }
 
-    thread_func_args->thread_complete_success = true; // Mark the thread as completed successfully
+    thread_func_args->thread_complete_success = true; // Mark the thread as successfully completed
     return NULL;
-}
 }
 
 
@@ -53,6 +51,25 @@ bool start_thread_obtaining_mutex(pthread_t *thread, pthread_mutex_t *mutex,int 
      *
      * See implementation details in threading.h file comment block
      */
-    return false;
+    struct thread_data* thread_data_alloc = malloc(sizeof(struct thread_data));
+    if (!thread_data_alloc) {
+        ERROR_LOG("Failed to allocate memory for thread_data");
+        return false;
+    }
+
+    // Setting up the thread data
+    thread_data_alloc->wait_to_obtain_ms = wait_to_obtain_ms;
+    thread_data_alloc->wait_to_release_ms = wait_to_release_ms;
+    thread_data_alloc->mutex = mutex;
+    thread_data_alloc->thread_complete_success = false;
+
+    // Creating the thread
+    if (pthread_create(thread, NULL, threadfunc, (void*)thread_data_alloc) != 0) {
+        ERROR_LOG("Failed to create thread");
+        free(thread_data_alloc);
+        return false;
+    }
+
+    return true;
 }
 
