@@ -110,10 +110,10 @@ mkdir -p "${OUTDIR}/rootfs/lib"
 mkdir -p "${OUTDIR}/rootfs/lib64"
 #DEPENDENCIES=$(find $(aarch64-none-linux-gnu-gcc -print-sysroot) -name 'libc-2.33.so')
 #echo $DEPENDENCIES
-sudo cp ~/gcc-dep/lib64/ld-linux-aarch64.so.1 "${OUTDIR}/rootfs/lib"
-sudo cp ~/gcc-dep/lib64/libm.so.6 "${OUTDIR}/rootfs/lib64"
-sudo cp ~/gcc-dep/lib64/libresolv.so.2 "${OUTDIR}/rootfs/lib64"
-sudo cp ~/gcc-dep/lib64/libc.so.6 "${OUTDIR}/rootfs/lib64"
+sudo cp /home/linux-o-phile/gcc-dep/lib64/ld-linux-aarch64.so.1 "${OUTDIR}/rootfs/lib"
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libm.so.6 "${OUTDIR}/rootfs/lib64"
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libresolv.so.2 "${OUTDIR}/rootfs/lib64"
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libc.so.6 "${OUTDIR}/rootfs/lib64"
 
 echo "Execution moved to copy lib dependencies"
 
