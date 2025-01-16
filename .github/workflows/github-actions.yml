@@ -13,8 +13,6 @@ jobs:
           - uses: actions/checkout@v2
           - name: Checkout submodules
             run : git submodule update --init --recursive
-          - name: Add Compiler to PATH
-            run : echo "::add-path::/home/linux-o-phile/gcc-dep/"
           - name: Run unit test
             run: ./unit-test.sh
     full-test:
@@ -24,7 +22,5 @@ jobs:
           - uses: actions/checkout@v2
           - name: Checkout submodules
             run : git submodule update --init --recursive
-          - name: Add Compiler to PATH
-            run : echo "::add-path::/home/linux-o-phile/gcc-dep/"
           - name: Run full test
             run: ./full-test.sh
