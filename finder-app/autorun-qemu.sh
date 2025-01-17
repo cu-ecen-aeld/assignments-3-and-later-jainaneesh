@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ash
 cd $(dirname $0)
 echo "Running test script"
 ./finder-test.sh
@@ -9,4 +9,5 @@ else
     echo "Completed with failure, failed with rc=${rc}"
 fi
 echo "finder-app execution complete, dropping to terminal"
-/bin/bash
+/bin/ash
+

@@ -5,7 +5,7 @@
 set -e
 set -u
 
-OUTDIR=/tmp/aesd-autograder
+OUTDIR=~/aesd-autograder-seeingifthisworks
 KERNEL_REPO=git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
 KERNEL_VERSION=v5.15.163
 BUSYBOX_VERSION=1_33_1
@@ -104,14 +104,27 @@ echo "Library dependencies"
 ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "Shared library"
 
-# TODO: Add library dependencies to rootfs
+#TODO: Add library dependencies to rootfs
 SYSROOT=$(${CROSS_COMPILE}gcc -print-sysroot)
 mkdir -p "${OUTDIR}/rootfs/lib"
 mkdir -p "${OUTDIR}/rootfs/lib64"
-cp -a $SYSROOT/lib/ld-linux-aarch64.so.1 "${OUTDIR}/rootfs/lib"
-cp -a $SYSROOT/lib64/libm.so.6 "${OUTDIR}/rootfs/lib64"
-cp -a $SYSROOT/lib64/libresolv.so.2 "${OUTDIR}/rootfs/lib64"
-cp -a $SYSROOT/lib64/libc.so.6 "${OUTDIR}/rootfs/lib64"
+#DEPENDENCIES=$(find $(aarch64-none-linux-gnu-gcc -print-sysroot) -name 'libc-2.33.so')
+#echo $DEPENDENCIES
+sudo cp /home/linux-o-phile/gcc-dep/lib/ld-linux-aarch64.so.1 "${OUTDIR}/rootfs/lib"
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libm.so.6 "${OUTDIR}/rootfs/lib64"
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libresolv.so.2 "${OUTDIR}/rootfs/lib64"
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libc.so.6 "${OUTDIR}/rootfs/lib64"
+
+echo "Execution moved to copy lib dependencies"
+
+sudo cp /home/linux-o-phile/gcc-dep/lib64/ld-2.33.so ${OUTDIR}/rootfs/lib64/   
+
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libc-2.33.so ${OUTDIR}/rootfs/lib64/   
+
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libm-2.33.so ${OUTDIR}/rootfs/lib64/   
+
+sudo cp /home/linux-o-phile/gcc-dep/lib64/libresolv-2.33.so ${OUTDIR}/rootfs/lib64/   
+
 
 # TODO: Make device nodes
 cd ${OUTDIR}/rootfs
@@ -129,14 +142,14 @@ make CROSS_COMPILE=${CROSS_COMPILE} all
 echo -e "Copying the finder related scripts and executables to rootfs home directory..."
 mkdir -p "${OUTDIR}/rootfs/home"
 mkdir -p "${OUTDIR}/rootfs/home/conf"
-cp "${FINDER_APP_DIR}/writer" "${OUTDIR}/rootfs/home"
-cp "${FINDER_APP_DIR}/finder.sh" "${OUTDIR}/rootfs/home"
-cp "${FINDER_APP_DIR}/finder-test.sh" "${OUTDIR}/rootfs/home"
-cp "${FINDER_APP_DIR}/start-qemu-terminal.sh" "${OUTDIR}/rootfs/home"
-cp "${FINDER_APP_DIR}/start-qemu-app.sh" "${OUTDIR}/rootfs/home"
-cp "${FINDER_APP_DIR}/autorun-qemu.sh" "${OUTDIR}/rootfs/home"
-cp "${FINDER_APP_DIR}/conf/assignment.txt" "${OUTDIR}/rootfs/home/conf"
-cp "${FINDER_APP_DIR}/conf/username.txt" "${OUTDIR}/rootfs/home/conf"
+cp ${FINDER_APP_DIR}/writer ${OUTDIR}/rootfs/home/
+cp ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home/
+cp ${FINDER_APP_DIR}/finder-test.sh ${OUTDIR}/rootfs/home/
+cp ${FINDER_APP_DIR}/start-qemu-terminal.sh ${OUTDIR}/rootfs/home/
+cp ${FINDER_APP_DIR}/start-qemu-app.sh ${OUTDIR}/rootfs/home/
+cp ${FINDER_APP_DIR}/autorun-qemu.sh ${OUTDIR}/rootfs/home/
+cp ${FINDER_APP_DIR}/conf/assignment.txt ${OUTDIR}/rootfs/home/conf/
+cp ${FINDER_APP_DIR}/conf/username.txt ${OUTDIR}/rootfs/home/conf/
 
 # TODO: Chown the root directory
 echo -e "Chnaging qemu root directory owner"
