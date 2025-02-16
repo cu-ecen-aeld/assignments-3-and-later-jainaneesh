@@ -1,7 +1,7 @@
 # Compiler settings
-CC = gcc
+CC ?= $(CROSS_COMPILE)gcc
 CFLAGS = -Wall -Wextra -g
-CROSS_COMPILE ?=
+#CROSS_COMPILE ?=
 TARGET = aesdsocket
 SRC = aesdsocket.c
 OBJ = $(SRC:.c=.o)
