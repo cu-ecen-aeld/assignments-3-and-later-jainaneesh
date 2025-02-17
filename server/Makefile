@@ -1,6 +1,6 @@
 # Compiler settings
-CC = gcc
 CROSS_COMPILE ?=
+CC = $(CROSS_COMPILE)gcc
 CFLAGS = -Wall -Wextra -g
 TARGET = aesdsocket
 SRC = aesdsocket.c
@@ -12,9 +12,12 @@ all: $(TARGET)
 
 default: all
 
+$(info CC=$(CC))
+$(info CROSS_COMPILE=$(CROSS_COMPILE))
+
 # Compile the program
 $(TARGET): $(SRC)
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
 
 # Clean compiled files
 clean:
