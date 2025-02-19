@@ -1,4 +1,6 @@
 # Compiler settings
+$(info Entered makefile for aesdsocket)
+$(info CROSS COMPILER IS $(TARGET_CROSS))
 CROSS_COMPILE = $(TARGET_CROSS)
 CC = $(CROSS_COMPILE)gcc
 CFLAGS = -Wall -Wextra -g
