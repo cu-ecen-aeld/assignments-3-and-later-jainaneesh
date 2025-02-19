@@ -1,50 +1,26 @@
 # Compiler settings
-$(info Entered makefile for aesdsocket)
-$(info CROSS COMPILER IS $(TARGET_CROSS))
-CROSS_COMPILE ?= $(TARGET_CROSS)
-$(info TARGET_CROSS = $(TARGET_CROSS))
-$(info CROSS_COMPILE was assigned $(CROSS_COMPILE))
-CC = $(CROSS_COMPILE)gcc
-CFLAGS = -Wall -Wextra -g
+CC = gcc  # Default compiler for native builds
+CROSS_COMPILE ?=  # Cross-compilation prefix (optional)
+
+# Target executable name
 TARGET = aesdsocket
+
+# Source files
 SRC = aesdsocket.c
-OBJ = $(SRC:.c=.o)
 
+# Compiler flags
+CFLAGS = -Wall -Wextra
 
-# Default target
+# Default target: Build the writer application
 all: $(TARGET)
 
-default: all
-
-$(info CC=$(CC))
-$(info CROSS_COMPILE=$(CROSS_COMPILE))
-$(info TARGET_CROSS = $(TARGET_CROSS))
-
-# Compile the program
+# Rule to compile the writer application
 $(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) -o $@ $<
 
-# Clean compiled files
+# Clean target: Remove compiled files
 clean:
-	rm -f $(TARGET) $(OBJ)
+	rm -f $(TARGET) *.o
 
-# Install to system (optional)
-install: $(TARGET)
-	sudo cp $(TARGET) /usr/bin
-	sudo chmod +x /usr/bin/$(TARGET)
-
-# Uninstall
-uninstall:
-	sudo rm -f /usr/bin/$(TARGET)
-
-# Run the server
-run:
-	$(TARGET)
-
-# Run in daemon mode
-daemon:
-	$(TARGET) -d
-
-# Cross-compilation example:
-# make CROSS_COMPILE=arm-linux-gnueabi-
-.PHONY: all clean install uninstall run daemon default
+# Phony targets: Prevents make from treating them as files
+.PHONY: all clean
