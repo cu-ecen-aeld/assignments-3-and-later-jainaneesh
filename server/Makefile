@@ -1,7 +1,9 @@
 # Compiler settings
 $(info Entered makefile for aesdsocket)
 $(info CROSS COMPILER IS $(TARGET_CROSS))
-CROSS_COMPILE = $(TARGET_CROSS)
+CROSS_COMPILE ?= $(TARGET_CROSS)
+$(info TARGET_CROSS = $(TARGET_CROSS))
+$(info CROSS_COMPILE was assigned $(CROSS_COMPILE))
 CC = $(CROSS_COMPILE)gcc
 CFLAGS = -Wall -Wextra -g
 TARGET = aesdsocket
@@ -16,6 +18,7 @@ default: all
 
 $(info CC=$(CC))
 $(info CROSS_COMPILE=$(CROSS_COMPILE))
+$(info TARGET_CROSS = $(TARGET_CROSS))
 
 # Compile the program
 $(TARGET): $(SRC)
