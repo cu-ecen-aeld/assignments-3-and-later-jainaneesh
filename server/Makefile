@@ -16,7 +16,7 @@ CFLAGS = -Wall -Wextra
 all: $(TARGET)
 
 # Rule to compile the writer application
-$(TARGET): $(SRC)
+$(TARGET): $(SRC) FORCE
 	$(info *** COMPILATION COMMAND: $(CROSS_COMPILE)$(CC) $(CFLAGS) -o $@ $< ***)
 	$(error "Paused for debugging. Execution shifted to aesd-assignments.mk Press any key to continue..."; echo)
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) -o $@ $<
