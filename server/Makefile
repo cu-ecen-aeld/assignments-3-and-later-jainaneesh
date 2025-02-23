@@ -1,7 +1,7 @@
 #$(shell read -n 1 -s -r -p "Paused for debugging. Execution shifted to aesd-assignments.mk Press any key to continue..."; echo)
 # Compiler settings
-CC = gcc  # Default compiler for native builds
 CROSS_COMPILE ?=  # Cross-compilation prefix (optional)
+CC = $(CROSS_COMPILE)gcc  # Default compiler for native builds
 $(info CROSS_COMPILE=$(CROSS_COMPILE))
 # Target executable name
 TARGET = aesdsocket
