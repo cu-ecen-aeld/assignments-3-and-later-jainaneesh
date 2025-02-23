@@ -27,3 +27,5 @@ clean:
 
 # Phony targets: Prevents make from treating them as files
 .PHONY: all clean
+
+FORCE: #This ensures the target is always rebuilt
