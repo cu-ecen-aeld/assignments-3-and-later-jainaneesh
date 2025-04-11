@@ -38,6 +38,10 @@ void cleanup_and_exit(int signum)
 	exit(EXIT_SUCCESS);
 }
 
+/*		          daemonize
+ *A function that daemonizes the aesdsocket process if the
+ *passes a "-d" flag with aesdsocket.
+ */
 void daemonize()
 {
 	pid_t pid = fork();
