@@ -11,6 +11,7 @@ SRC = aesdsocket.c
 
 # Compiler flags
 CFLAGS = -Wall -Wextra
+LDFLAGS = -lpthread
 
 # Default target: Build the writer application
 all: $(TARGET)
@@ -18,7 +19,7 @@ all: $(TARGET)
 # Rule to compile the writer application
 $(TARGET): $(SRC) FORCE
 	$(info *** COMPILATION COMMAND: $(CC) $(CFLAGS) -o $@ $< ***)
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # Clean target: Remove compiled files
 clean:
