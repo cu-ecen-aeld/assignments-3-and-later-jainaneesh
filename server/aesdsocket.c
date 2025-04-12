@@ -119,6 +119,9 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, cleanup_and_exit);
     signal(SIGTERM, cleanup_and_exit);
 
+    int fd = open(FILE_PATH, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+    if ( fd >= 0) close(fd);
+    pthread_create(&timestamp_thread, NULL, timestamp_writer, NULL);
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket < 0) {
         syslog(LOG_ERR, "Socket creation failed");
@@ -144,7 +147,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    pthread_create(&timestamp_thread, NULL, timestamp_writer, NULL);
+    //pthread_create(&timestamp_thread, NULL, timestamp_writer, NULL);
 
     while (!stop) {
         struct thread_data *tdata = malloc(sizeof(struct thread_data));
