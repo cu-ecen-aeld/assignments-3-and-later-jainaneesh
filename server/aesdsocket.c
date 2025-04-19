@@ -89,13 +89,13 @@ void *handle_client(void *arg) {
             close(tdata->client_socket);
             return NULL;
         }
-    }
+   
         data = new_data;
         memcpy(data + total_len, buffer, bytes);
         total_len += bytes;
 
         if (memchr(buffer, '\n', bytes)) break;
-   
+    }
 
     // 2. Write to file with mutex protection
     if (total_len > 0) {
@@ -145,7 +145,8 @@ int main(int argc, char *argv[]) {
     // Truncate file once at start
     int fd = open(FILE_PATH, O_WRONLY | O_TRUNC | O_CREAT, 0644);
     if (fd >= 0) close(fd);
-
+    
+    sleep(2);
     // Start timestamp writer thread early
     pthread_create(&timestamp_thread, NULL, timestamp_writer, NULL);
 
