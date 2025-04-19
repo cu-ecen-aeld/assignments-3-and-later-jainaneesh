@@ -36,6 +36,7 @@ void cleanup_and_exit(int signum) {
     syslog(LOG_INFO, "SIGINT or SIGTERM detected, exiting");
     stop = 1;
     if (server_socket != -1) shutdown(server_socket, SHUT_RDWR);
+    remove(FILE_PATH);
 }
 
 void daemonize() {
@@ -44,7 +45,7 @@ void daemonize() {
         syslog(LOG_ERR, "Failed to fork");
         exit(EXIT_FAILURE);
     }
-    if (pid > 0) exit(EXIT_SUCCESS); // Parent exits
+    if (pid > 0) exit(EXIT_SUCCESS);
     umask(0);
     if (setsid() < 0) exit(EXIT_FAILURE);
     if (chdir("/") < 0) exit(EXIT_FAILURE);
@@ -53,44 +54,7 @@ void daemonize() {
     close(STDERR_FILENO);
 }
 
-void *handle_client(void *arg) {
-    struct thread_data *tdata = (struct thread_data *)arg;
-    char buffer[BUFFER_SIZE];
-    ssize_t bytes;
-
-    pthread_mutex_lock(&file_mutex);
-    int file_fd = open(FILE_PATH, O_CREAT | O_WRONLY | O_APPEND, 0644);
-    if (file_fd < 0) {
-        syslog(LOG_ERR, "Failed to open file for writing");
-        pthread_mutex_unlock(&file_mutex);
-        close(tdata->client_socket);
-        return NULL;
-    }
-
-    while ((bytes = recv(tdata->client_socket, buffer, BUFFER_SIZE - 1, 0)) > 0) {
-        write(file_fd, buffer, bytes);
-        if (buffer[bytes - 1] == '\n') break;
-    }
-    close(file_fd);
-    pthread_mutex_unlock(&file_mutex);
-
-    pthread_mutex_lock(&file_mutex);
-    file_fd = open(FILE_PATH, O_RDONLY);
-    if (file_fd >= 0) {
-        while ((bytes = read(file_fd, buffer, BUFFER_SIZE)) > 0) {
-            send(tdata->client_socket, buffer, bytes, 0);
-        }
-        close(file_fd);
-    }
-    pthread_mutex_unlock(&file_mutex);
-
-    syslog(LOG_INFO, "Closed connection from %s", inet_ntoa(tdata->client_addr.sin_addr));
-    close(tdata->client_socket);
-    return NULL;
-}
-
 void *timestamp_writer(void *arg) {
-    (void)arg;
     while (!stop) {
         sleep(10);
         time_t now = time(NULL);
@@ -109,6 +73,65 @@ void *timestamp_writer(void *arg) {
     return NULL;
 }
 
+void *handle_client(void *arg) {
+    struct thread_data *tdata = (struct thread_data *)arg;
+    char buffer[BUFFER_SIZE];
+    char *data = NULL;
+    size_t total_len = 0;
+    ssize_t bytes;
+
+    // 1. Receive the complete message from client
+    while ((bytes = recv(tdata->client_socket, buffer, BUFFER_SIZE, 0)) > 0) {
+        char *new_data = realloc(data, total_len + bytes);
+        if (!new_data) {
+            syslog(LOG_ERR, "realloc failed");
+            free(data);
+            close(tdata->client_socket);
+            return NULL;
+        }
+    }
+        data = new_data;
+        memcpy(data + total_len, buffer, bytes);
+        total_len += bytes;
+
+        if (memchr(buffer, '\n', bytes)) break;
+   
+
+    // 2. Write to file with mutex protection
+    if (total_len > 0) {
+        pthread_mutex_lock(&file_mutex);
+        int file_fd = open(FILE_PATH, O_CREAT | O_WRONLY | O_APPEND, 0644);
+        if (file_fd >= 0) {
+            write(file_fd, data, total_len);
+            close(file_fd);
+        } else {
+            syslog(LOG_ERR, "Failed to open file for writing");
+        }
+        pthread_mutex_unlock(&file_mutex);
+    }
+
+    free(data);
+
+    // 3. Read back and send to client
+    pthread_mutex_lock(&file_mutex);
+    int file_fd = open(FILE_PATH, O_RDONLY);
+    if (file_fd >= 0) {
+        while ((bytes = read(file_fd, buffer, BUFFER_SIZE)) > 0) {
+            send(tdata->client_socket, buffer, bytes, 0);
+        }
+        close(file_fd);
+    } else {
+        syslog(LOG_ERR, "Failed to open file for reading");
+    }
+    //file_fd = open(FILE_PATH, O_WRONLY);
+    //if ( file_fd > 0 ) close(file_fd);
+    pthread_mutex_unlock(&file_mutex);
+
+    syslog(LOG_INFO, "Closed connection from %s", inet_ntoa(tdata->client_addr.sin_addr));
+    close(tdata->client_socket);
+    return NULL;
+}
+
 int main(int argc, char *argv[]) {
     int daemon_mode = (argc > 1 && strcmp(argv[1], "-d") == 0);
     struct sockaddr_in server_addr, client_addr;
@@ -119,9 +142,14 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, cleanup_and_exit);
     signal(SIGTERM, cleanup_and_exit);
 
+    // Truncate file once at start
     int fd = open(FILE_PATH, O_WRONLY | O_TRUNC | O_CREAT, 0644);
-    if ( fd >= 0) close(fd);
+    if (fd >= 0) close(fd);
+
+    // Start timestamp writer thread early
     pthread_create(&timestamp_thread, NULL, timestamp_writer, NULL);
+
+    // Set up socket
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket < 0) {
         syslog(LOG_ERR, "Socket creation failed");
@@ -147,8 +175,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    //pthread_create(&timestamp_thread, NULL, timestamp_writer, NULL);
-
     while (!stop) {
         struct thread_data *tdata = malloc(sizeof(struct thread_data));
         if (!tdata) continue;
@@ -162,16 +188,13 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        syslog(LOG_INFO, "Accepted connection from %s",
-               inet_ntoa(tdata->client_addr.sin_addr));
-
+        syslog(LOG_INFO, "Accepted connection from %s", inet_ntoa(tdata->client_addr.sin_addr));
         pthread_create(&tdata->thread_id, NULL, handle_client, tdata);
         SLIST_INSERT_HEAD(&thread_head, tdata, entries);
 
-        // Clean up completed threads
+        // Reap finished threads
         struct thread_data *curr = SLIST_FIRST(&thread_head);
         struct thread_data *prev = NULL;
-
         while (curr != NULL) {
             struct thread_data *next = SLIST_NEXT(curr, entries);
             if (pthread_tryjoin_np(curr->thread_id, NULL) == 0) {
@@ -188,10 +211,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Join timestamp thread
     pthread_join(timestamp_thread, NULL);
 
-    // Join remaining client threads
+    // Join all remaining threads
     struct thread_data *np;
     while (!SLIST_EMPTY(&thread_head)) {
         np = SLIST_FIRST(&thread_head);
