@@ -11,7 +11,7 @@ SRC = aesdsocket.c
 
 # Compiler flags
 CFLAGS = -Wall -Wextra
-LDFLAGS = -lpthread
+LDFLAGS ?= -lpthread
 
 # Default target: Build the writer application
 all: $(TARGET)
